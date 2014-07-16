@@ -35,9 +35,7 @@ The structure of an R object can be displayed using the **str** function. Examin
 str(activity)
 ```
 
-The *date* and *interval* columns appear to represent the date and time at the start of the 5 minute interval for which *steps* have been counted.
-
-To transform this to a time-series of counts, the *date* and *interval* columns will be used to create a new POSIXct datetime column in the dataframe called *datetime*. 
+The *date* and *interval* columns represent the date and time at the start of the 5 minute interval for which *steps* have been counted. No specific transformation of data is needed. However, with the purpose of exploring the `lubridate` package, the *date* and *interval* columns will be used to create a new POSIXct datetime column in the dataframe called *datetime*. This is not required for this assessment.
 
 ```{r datetime}
 

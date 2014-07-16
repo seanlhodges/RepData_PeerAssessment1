@@ -88,8 +88,7 @@ head(activity)</code></pre>
 ##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ date    : Factor w/ 61 levels &quot;2012-10-01&quot;,&quot;2012-10-02&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...</code></pre>
-<p>The <em>date</em> and <em>interval</em> columns appear to represent the date and time at the start of the 5 minute interval for which <em>steps</em> have been counted.</p>
-<p>To transform this to a time-series of counts, the <em>date</em> and <em>interval</em> columns will be used to create a new POSIXct datetime column in the dataframe called <em>datetime</em>.</p>
+<p>The <em>date</em> and <em>interval</em> columns represent the date and time at the start of the 5 minute interval for which <em>steps</em> have been counted. No specific transformation of data is needed. However, with the purpose of exploring the <code>lubridate</code> package, the <em>date</em> and <em>interval</em> columns will be used to create a new POSIXct datetime column in the dataframe called <em>datetime</em>. This is not required for this assessment.</p>
 <pre class="r"><code>#install.packages(&quot;lubridate&quot;,&quot;ggplot2&quot;)
 library(lubridate)
 
