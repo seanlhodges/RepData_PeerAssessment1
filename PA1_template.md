@@ -1,8 +1,3 @@
----
-output:
-  html_document:
-    keep_md: yes
----
 # Reproducible Research: Peer Assessment 1
 
 ## Introduction
@@ -19,25 +14,44 @@ The *activity* dataset provided for this assessment presents an opportunity to w
 1. Load the data  
 
 Unzipping the file into the default project directory, the file is loaded for review:
-```{r}
+
+```r
 activity <- read.csv("activity.csv")
 head(activity)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
 2. Process/transform the data (if necessary) into a suitable format for analysis  
 
 The structure of an R object can be displayed using the **str** function. Examining the *activity* object, the variable data-types can be assessed.
 
-```{r}
+
+```r
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 The *date* and *interval* columns appear to represent the date and time at the start of the 5 minute interval for which *steps* have been counted.
 
 To transform this to a time-series of counts, the *date* and *interval* columns will be used to create a new POSIXct datetime column in the dataframe called *datetime*. 
 
-```{r datetime}
 
+```r
 #install.packages("lubridate","ggplot2")
 library(lubridate)
 
@@ -52,6 +66,16 @@ data <- activity[,c(6,2,1,3)]
 head(data)
 ```
 
+```
+##              datetime       date steps interval
+## 1 2012-10-01 00:00:00 2012-10-01    NA        0
+## 2 2012-10-01 00:05:00 2012-10-01    NA        5
+## 3 2012-10-01 00:10:00 2012-10-01    NA       10
+## 4 2012-10-01 00:15:00 2012-10-01    NA       15
+## 5 2012-10-01 00:20:00 2012-10-01    NA       20
+## 6 2012-10-01 00:25:00 2012-10-01    NA       25
+```
+
 
 ## What is mean total number of steps taken per day?
 For this part of the assignment, missing values in the dataset are ignored.  
@@ -59,20 +83,30 @@ For this part of the assignment, missing values in the dataset are ignored.
 1. Make a histogram of the total number of steps taken each day.  
 
 The total number of steps taken each day now need to be calculated (ignoring NAs).
-```{r meanNumberOfSteps}
+
+```r
 ag <- aggregate(data$steps,by=list(category=data$date), FUN=sum)
 ```
 
 Plotting the histogram:  
-```{r histogram, fig.width=4,fig.height=4,fig.cap="Histogram of total steps each day"}
+
+```r
 library(ggplot2)
 qplot(x,data=ag,geom="histogram", binwidth=5000)
 ```
 
+![Histogram of total steps each day](./PA1_template_files/figure-html/histogram.png) 
+
 2. Calculate and report the **mean** and **median**.
 
-```{r}
+
+```r
 summary(ag$x)[3:4]
+```
+
+```
+## Median   Mean 
+##  10800  10800
 ```
 
 
@@ -81,26 +115,39 @@ summary(ag$x)[3:4]
 1. Make a time series plot.  
 
 To examine the raw average for each time step over the two months of data collection, the following time series plot presents the average number of steps by 5 minute interval (ignoring NAs).
-```{r ggplot2, fig.width=6,fig.height=4}
+
+```r
 ag <- aggregate(data$steps,by=list(category=data$interval), FUN=mean, na.rm=TRUE)
 
 ggplot(data=ag, aes(x=category, y=x)) + geom_line() +
                 ylab("Average number of steps") +
                 xlab("Interval") +
                 ggtitle("Average daily activity pattern")
-
 ```
+
+![plot of chunk ggplot2](./PA1_template_files/figure-html/ggplot2.png) 
 
 2. Which 5 minute interval, on average, contains the maximum number of steps?   
 
 To determine the time interval where the maximum number of steps is recorded, the simplest method is probably to sort the data.frame in decreasing order so that the maximum value is shown at the top.
 
-```{r timeIntervalMax}
+
+```r
 sort_ag <- ag[ order(ag$x,decreasing=TRUE),]
 head(sort_ag)
 ```
 
-The 5 minute interval with the highest average number of steps is **`r sort_ag$category[1]`**.
+```
+##     category     x
+## 104      835 206.2
+## 105      840 195.9
+## 107      850 183.4
+## 106      845 179.6
+## 103      830 177.3
+## 101      820 171.2
+```
+
+The 5 minute interval with the highest average number of steps is **835**.
 
 
 ## Imputing missing values
@@ -109,23 +156,25 @@ The presence of missing days may introduce bias into some calculations or summar
 1. Determine the number of NAs
 
 Summing the response from the `is.na()` function will return the number of NAs for an input vector.  
-`sum(is.na(data$steps))` = `r sum(is.na(data$steps))`.
+`sum(is.na(data$steps))` = 2304.
 
 2. Devise a strategy to fill missing values  
 
 Median values for each interval will be calculated and will be applied to NA values in the dataframe. 
 
-```{r MissingValueStrategy}
+
+```r
 # calculating the median value for each interval
 med <- aggregate(data$steps,by=list(category=data$interval), FUN=median, na.rm=TRUE)
 names(med) <- c("interval","steps")
-````
+```
 
 3. Create a new data set with the missing values filled in  
 
 The process used to replace NAs will be to subset out rows with NA values, merge the calculated median data with the subset, and then rebuild the full dataset.
 
-```{r FillingInNAs}
+
+```r
 # subset out the rows with NA 
 sub <- subset(data,is.na(steps))
 
@@ -142,23 +191,43 @@ rownames(df) <- NULL
 head(df)
 ```
 
+```
+##              datetime       date steps interval
+## 1 2012-10-01 00:00:00 2012-10-01     0        0
+## 2 2012-10-01 00:05:00 2012-10-01     0        5
+## 3 2012-10-01 00:10:00 2012-10-01     0       10
+## 4 2012-10-01 00:15:00 2012-10-01     0       15
+## 5 2012-10-01 00:20:00 2012-10-01     0       20
+## 6 2012-10-01 00:25:00 2012-10-01     0       25
+```
+
 4. Make a histogram and report the mean and median as before.
 
-```{r meanNumberOfSteps2}
+
+```r
 dfsum <- aggregate(df$steps,by=list(date=data$date), FUN=sum)
 names(dfsum) <- c("date","steps")
 ```
 
 Plotting the histogram:  
-```{r histogram2, fig.width=4,fig.height=4,fig.cap="Histogram of total steps each day"}
+
+```r
 library(ggplot2)
 qplot(steps,data=dfsum,geom="histogram", binwidth=5000)
 ```
 
+![Histogram of total steps each day](./PA1_template_files/figure-html/histogram2.png) 
+
 Calculate and report the **mean** and **median**.
 
-```{r}
+
+```r
 summary(dfsum$x)[3:4]
+```
+
+```
+##   Mode   <NA> 
+## "NULL"     NA
 ```
 
 Clearly, these values differ from the mean and median values reported earlier.  
@@ -172,7 +241,8 @@ The impact of imputing missing data in this case is to lower both the mean and m
 
 Using the dataset with the filled-in missing values - `df`.
 
-```{r weekdays}
+
+```r
 # create weekday values from date column
 df$wday <- wday(df$date)
 df$wdayStr <- wday(df$date, label=TRUE,abbr=TRUE)
@@ -182,22 +252,50 @@ df$dayType <- ifelse(df$wday==1,c("weekend"),ifelse(df$wday==7,c("weekend"),c("w
 #head(dfsum,100)
 df$dayType <- factor(df$dayType)
 str(dfsum)
+```
 
+```
+## 'data.frame':	61 obs. of  2 variables:
+##  $ date : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 2 3 4 5 6 7 8 9 10 ...
+##  $ steps: int  1141 126 11352 12116 13294 15420 11015 1141 12811 9900 ...
+```
+
+```r
 ## Aggregate data as before, but this time split by factor dayType
 dfsum_wday <- aggregate(df$steps,by=list(interval=df$interval,dayType=df$dayType), FUN=sum)
 names(dfsum_wday) <- c("interval","dayType","steps")
 head(dfsum_wday)
 ```
 
+```
+##   interval dayType steps
+## 1        0 weekday    91
+## 2        5 weekday    18
+## 3       10 weekday     7
+## 4       15 weekday     8
+## 5       20 weekday     4
+## 6       25 weekday    59
+```
+
 2. Make a panel plot for weekdays and weekends comparing average steps across 5-minute intervals
 
-```{r panelPlot, fig.width=6,fig.height=4}
+
+```r
 require(lattice)
+```
+
+```
+## Loading required package: lattice
+```
+
+```r
 # scatterplots for each combination of two factors
 attach(dfsum_wday)
 xyplot(steps~interval|dayType ,type="l",
    main="Time series of steps over intervals by weekday and weekend", 
    ylab="Steps", xlab="Interval",layout=c(1,2))
 ```
+
+![plot of chunk panelPlot](./PA1_template_files/figure-html/panelPlot.png) 
 
 
